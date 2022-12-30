@@ -1,6 +1,19 @@
 const express = require('express');
-const puppeteer = require('puppeteer');
+//const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-extra')
+const StealthPlugin = require('puppeteer-extra-plugin-stealth')
+puppeteer.use(StealthPlugin())
+
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+
+const randomUseragent = require('random-useragent');
+const userAgent = randomUseragent.getRandom();
+//const USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36';
+// const UA = userAgent || USER_AGENT;
+const UA = userAgent;
+
+var userAgentGo = require('user-agents');
+
 
 const app = express();
 app.use(express.json());
@@ -17,6 +30,21 @@ app.get('/', async (req, res) => {
 //     : // Run the browser locally while in development
 //       puppeteer.launch();
 
+const bypassCaptcha = async (page) => {
+  try {
+    const rect = await page.$eval('#px-captcha', el => {
+      const {x, y} = el.getBoundingClientRect();
+      return {x, y};
+    });
+ 
+    const offset = {x: 50, y: 50};
+ 
+    await page.mouse.click(rect.x + offset.x, rect.y + offset.y, {
+      delay: 10000
+    });
+  } catch {}
+}
+
 app.get('/image', async (req, res) => {
 
   try {
@@ -26,7 +54,13 @@ app.get('/image', async (req, res) => {
     
     // The rest of your script remains the same
     const page = await browser.newPage();
-    await page.goto('https://google.com/', { waitUntil: 'domcontentloaded' });
+    const userAgentGoString = userAgentGo.toString();
+    console.log(UA);
+    await page.setUserAgent(UA)
+    await page.goto('https://www.zillow.com/homedetails/36923545_zpid/', { waitUntil: 'domcontentloaded' });
+
+   // await bypassCaptcha(page);
+
     const screenshot = await page.screenshot();
 
     res.end(screenshot, 'binary');
@@ -61,18 +95,22 @@ app.get('/properties/v2/detail', async (req, res, next) => {
   let properties_detail = [];
   const zpid_url = `https://www.zillow.com/homedetails/${zpid}_zpid/`;
 
+  console.log(req.query.property_id);
 
   (async() =>{
+    console.log(2);
   // Puppeteer
       const browser = await puppeteer.connect({
         browserWSEndpoint: 'wss://chrome.browserless.io?token=da549f5d-deea-4389-9fca-f088af72b3a1' 
       });
 
       const page = await browser.newPage();
-      await page.goto(zpid_url);
+      console.log(zpid_url);
+      await page.setUserAgent(UA)
+      await page.goto(zpid_url, { waitUntil: 'domcontentloaded' });
 
       let quotes = await page.evaluate(() => {
-          let quotes = document.body.querySelector('script[id="hdpApolloPreloadedData"]').textContent;
+          let quotes = document.body.querySelector('script[id="hdpApolloPreloadedData"]').innerText;
           return quotes;
       });
 
