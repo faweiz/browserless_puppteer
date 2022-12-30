@@ -17,5 +17,8 @@
     "puppeteer-extra-plugin-stealth": "^2.11.1",
     "random-useragent": "^0.5.0",
     "user-agents": "^1.0.1245"
+  },
+  "pkg": {
+    "assets": "node_modules/puppeteer-extra-plugin-stealth/**/*.*"
   }
 }
