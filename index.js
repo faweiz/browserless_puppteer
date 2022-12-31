@@ -3,6 +3,8 @@ const puppeteer = require('puppeteer');
 // const puppeteer = require('puppeteer-extra')
 // const StealthPlugin = require('puppeteer-extra-plugin-stealth')
 // puppeteer.use(StealthPlugin())
+const https = require('https');
+const dotenv = require('dotenv');
 
 const randomUseragent = require('random-useragent');
 const random_useragent = randomUseragent.getRandom();
@@ -10,9 +12,11 @@ const useragent_standard = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) Appl
 const userAgent = random_useragent || useragent_standard;
 console.log('userAgent: ', userAgent);
 
-
 const app = express();
 app.use(express.json());
+dotenv.config();
+
+const baseUrl = 'https://www.zillow.com/homes'
 
 // Welcome route
 app.get('/', async (req, res) => {
