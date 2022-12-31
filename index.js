@@ -75,20 +75,6 @@ app.get('/properties/v2/list-for-sale/', async (req, res, next) => {
         const address_zipcode = req.query.zipcode;
         address_parm = address_zipcode;
     }
-    if (isProduct) {
-        options = {
-        args: [...chrome.args, "--hide-scrollbars", "--disable-web-security"],
-        defaultViewport: chrome.defaultViewport,
-        executablePath: await chrome.executablePath,
-        headless: true,
-        ignoreHTTPSErrors: true,
-          };
-      }else{
-          options = {
-              args: [],
-              headless: true,
-          };
-      }
 
     try {
         console.log(`Getting Zillow data`);
